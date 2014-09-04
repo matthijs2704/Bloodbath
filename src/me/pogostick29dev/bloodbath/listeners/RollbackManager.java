@@ -2,6 +2,7 @@ package me.pogostick29dev.bloodbath.listeners;
 
 import me.pogostick29dev.bloodbath.Arena;
 import me.pogostick29dev.bloodbath.ArenaManager;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 
 public class RollbackManager implements Listener {
 
@@ -52,10 +54,12 @@ public class RollbackManager implements Listener {
 		handle(e.getBlock().getState());
 	}
 
-//    @EventHandler
-//    public void onBlockDispense(org.bukkit.event.block.BlockDispenseEvent e){
-//        handle(e.getBlock().getState());
-//    }
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent e){
+        for (Block b : e.blockList()) {
+            handle(b.getState());
+        }
+    }
 //
 //    @EventHandler
 //    public void onBlockExp(org.bukkit.event.block.BlockExpEvent e){
@@ -109,10 +113,17 @@ public class RollbackManager implements Listener {
 //        handle(e.getNewState());
 //    }
 //
-//    @EventHandler
-//    public void onBlockPhysics(org.bukkit.event.block.BlockPhysicsEvent e){
-//        handle(e.getBlock().getState());
-//    }
+    @EventHandler
+    public void onBlockPhysics(org.bukkit.event.block.BlockPhysicsEvent e){
+        for (Arena arena : ArenaManager.getInstance().getArenas()) {
+
+            if (arena.getBounds().contains(e.getBlock().getLocation()) && arena.getState() == Arena.ArenaState.RESTTING) {
+                e.setCancelled(true);
+                break;
+            }
+
+        }
+    }
 //
 //    @EventHandler
 //    public void onBlockPistonExtend(org.bukkit.event.block.BlockPistonExtendEvent e){

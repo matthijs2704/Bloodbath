@@ -19,7 +19,7 @@ import java.util.List;
 public class Arena {
 	
 	public enum ArenaState {
-		WAITING, COUNTDOWN, STARTED
+		WAITING, COUNTDOWN, STARTED, RESTTING
 	}
 
 	private String id;
@@ -100,7 +100,12 @@ public class Arena {
 			p.sendMessage(ChatColor.RED + "This arena has already started.");
 			return;
 		}
-		
+
+        if (state == ArenaState.RESTTING){
+            p.sendMessage(ChatColor.RED + "Please wait while the arena repairs itself.");
+            return;
+        }
+
 		if (players.size() + 1 > spawns.size()) {
 			p.sendMessage(ChatColor.RED + "This arena is full.");
 			return;
@@ -172,7 +177,7 @@ public class Arena {
 
 			players.clear();
 			rollback();
-			state = ArenaState.WAITING;
+
 		}
 	}
 	
@@ -206,16 +211,20 @@ public class Arena {
                     if (effect)
                         bs.getBlock().getWorld().playEffect(bs.getLocation(), Effect.STEP_SOUND, bs.getBlock().getType());
                 }else {
-
+                    for (BlockState state : changedBlocks){
+                        state.update(true,false);
+                    }
                     blocks.clear();
                     this.cancel();
+                    state = ArenaState.WAITING;
+                    Bukkit.getServer().broadcastMessage("Reset of arena " + id + " is done!");
                 }
             }
         }.runTaskTimer(Main.getPlugin(), speed, speed);
     }
 
 	public void rollback() {
-
+        this.state = ArenaState.RESTTING;
 		regen(changedBlocks, true, (long) 1);
 
 //        try {
@@ -241,6 +250,7 @@ public class Arena {
                 }
             }
 			p.setHealth(20.0D);
+            p.setFoodLevel(20);
 			p.setGameMode(GameMode.SURVIVAL);
 		}
 		
